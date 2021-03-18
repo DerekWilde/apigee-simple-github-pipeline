@@ -60,7 +60,8 @@ limitations under the License.
 		<apigee.password>${env.APIGEE_PASS}</apigee.password>
 		
 		<apigee.authtype>oauth</apigee.authtype>
-		<apigee.mfatoken>${mfatoken}</apigee.mfatoken>
+		<!-- <apigee.mfatoken>${mfatoken}</apigee.mfatoken> -->
+		<apigee.bearer>${bearer}</apigee.bearer>
 	</properties>
 
 
