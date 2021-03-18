@@ -22,7 +22,7 @@
             <Payload contentType="application/json">
                 {
                     "error":"404.01.001",
-                    "msg": "The requested resource {proxy.pathsuffix} was not found.",
+                    "msg": "The requested resource {proxy.pathsuffix} was not found!",
                     "link": "https://developer.example.com/404.01.001"
                 }
             </Payload>
