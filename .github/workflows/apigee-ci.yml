@@ -1,11 +1,10 @@
-
 name: Apigee CI with Maven
 
 on: push
   
 env:
   # Default Target Apigee Organization (can be also be dynamically defined in [Set Variables *] steps)
-  DEFAULT_APIGEE_ORG: wilde-demo
+  DEFAULT_APIGEE_ORG: derekwilde-eval
   # Retrieve Apigee UserID and password from repository settings (secrets)
   APIGEE_CREDS_USR: ${{ secrets.APIGEE_CREDS_USR }}
   APIGEE_CREDS_PSW: ${{ secrets.APIGEE_CREDS_PSW }}
@@ -15,8 +14,6 @@ env:
   AUTHOR_EMAIL: ''
   APIGEE_ORG: ''
   APIGEE_DEPLOYMENT_SUFFIX: ''
-  # Enter Bearer token 
-  # BEARER_TOKEN: eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiI5NjM2NWQzNC0zZWE4LTQ4MjktYjY1Yi02NzJjMWQ2NjI0ZjEiLCJzdWIiOiIzMjU4NTY3OS1jYTJhLTQwODctOTg1OS04YThlODBmMzFmMWYiLCJzY29wZSI6WyJzY2ltLmVtYWlscy5yZWFkIiwic2NpbS5tZSIsIm9wZW5pZCIsInBhc3N3b3JkLndyaXRlIiwiYXBwcm92YWxzLm1lIiwic2NpbS5pZHMucmVhZCIsIm9hdXRoLmFwcHJvdmFscyJdLCJjbGllbnRfaWQiOiJlZGdlY2xpIiwiY2lkIjoiZWRnZWNsaSIsImF6cCI6ImVkZ2VjbGkiLCJncmFudF90eXBlIjoicGFzc3dvcmQiLCJ1c2VyX2lkIjoiMzI1ODU2NzktY2EyYS00MDg3LTk4NTktOGE4ZTgwZjMxZjFmIiwib3JpZ2luIjoidXNlcmdyaWQiLCJ1c2VyX25hbWUiOiJkZXJla2NvQGdvb2dsZS5jb20iLCJlbWFpbCI6ImRlcmVrY29AZ29vZ2xlLmNvbSIsImF1dGhfdGltZSI6MTYxNjAzMDczNiwiYWwiOjIsInJldl9zaWciOiJhMTlhZTQyZiIsImlhdCI6MTYxNjAzMDczNiwiZXhwIjoxNjE2MDczOTM2LCJpc3MiOiJodHRwczovL2xvZ2luLmFwaWdlZS5jb20iLCJ6aWQiOiJ1YWEiLCJhdWQiOlsiZWRnZWNsaSIsInNjaW0uZW1haWxzIiwic2NpbSIsIm9wZW5pZCIsInBhc3N3b3JkIiwiYXBwcm92YWxzIiwic2NpbS5pZHMiLCJvYXV0aCJdfQ.KQ478pfYEzNGgXXbfaC9zOwP_NS-ynMtSM9mKMQf5kWkCvRa9qoy-AIyq0JeM0ueFGeopgB8sWXvfIP2gEF68CMRw0ZeHHdmCm5lq_og9KF1uoef6NLcbIxp6b4v6gjEi1w2PFCUVTh-oX8kASkyP0uyGAW5Oz6QSltN40sEONxUm13KGPbCGYfzeQa4EWVMChiF_1GHf0kSssGzU38d54HaOZwsytFZwkePJ6GWQD8V_rP09umvhsKVFgZLiIh4KorKcbQflVJDyvrNzKQiUBfSrwDea0Idpk_5EFam-WV37lDwwxHrN8geCkg2wQ73WlPo8sHcbGHnJEYmB3k8cw
 
 
 jobs:
@@ -35,7 +32,6 @@ jobs:
           echo "MAVEN_PROFILE=test" >> $GITHUB_ENV
           echo "APIGEE_ORG=$(echo $DEFAULT_APIGEE_ORG)" >> $GITHUB_ENV
           echo "TEST_HOST=$(echo $APIGEE_ORG-$MAVEN_PROFILE.apigee.net)" >> $GITHUB_ENV
-
       - name: Set Variables for [Prod] branch
         if: github.ref == 'refs/heads/prod'
         run: |
@@ -52,8 +48,6 @@ jobs:
           echo "MAVEN_PROFILE=test" >> $GITHUB_ENV
           echo "APIGEE_ORG=$(echo $DEFAULT_APIGEE_ORG)" >> $GITHUB_ENV
           echo "TEST_HOST=$(echo $APIGEE_ORG-$MAVEN_PROFILE.apigee.net)" >> $GITHUB_ENV
-
-
   # Create Dependencies (npm) Cache 
       - name: Cache node modules
         uses: actions/cache@v2
@@ -67,8 +61,6 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-
-
   # Install dependencies (npm)
       - name: Install Dependencies
         run: npm install --silent --no-fund
@@ -128,9 +120,7 @@ jobs:
       - name: mvn-deploy-config
         run:  |
           sed -i "s/target_apigee_env/$MAVEN_PROFILE/g" EdgeConfig/edge.json
-          mvn install -P$MAVEN_PROFILE -Dmfatoken=123456 -Dapigee.org=$APIGEE_ORG -Dapigee.username=$APIGEE_CREDS_USR -Dapigee.password=$APIGEE_CREDS_PSW -Dapigee.config.file=./EdgeConfig/edge.json -Dapigee.config.options=update
-
-
+          mvn install -P$MAVEN_PROFILE -Dapigee.org=$APIGEE_ORG -Dapigee.username=$APIGEE_CREDS_USR -Dapigee.password=$APIGEE_CREDS_PSW -Dapigee.config.file=./EdgeConfig/edge.json -Dapigee.config.options=update
   # Package & Deploy Apigee proxy (Apigee [Deploy] Maven plugin)
       - name: mvn-package
         run: mvn process-resources -P$MAVEN_PROFILE -Dcommit=$GIT_COMMIT -Dbranch=$GIT_BRANCH -Dauthor=$AUTHOR_EMAIL -Ddeployment.suffix=$APIGEE_DEPLOYMENT_SUFFIX
@@ -149,7 +139,6 @@ jobs:
           sed -i "s/organization_hostname/$TEST_HOST/g" ./test/integration/features/support/init.js
           node ./node_modules/cucumber/bin/cucumber-js ./test/integration --format json:./report.json
           node ./test/integration/index.js
-
       - name: Archive Apickli results
         uses: actions/upload-artifact@v2
         with:
